@@ -14,7 +14,6 @@
         - Una matriz de pixeles binarizados.
 */
 void binarizarImagen(cabeceraInformacion *binformacion, unsigned char *data_grisaseo, int UMBRAL, bitmaptotal *total_pixel){
-    int tuberia[2];
     pid_t pid;
     int columnas;
     int contadorTotal = 0;
@@ -42,15 +41,13 @@ void binarizarImagen(cabeceraInformacion *binformacion, unsigned char *data_gris
     }
     totalPixel -> totalBlancos = contadorBlancos;
     totalPixel -> totalNegros = contadorNegros;
-    pipe(tuberia);
     pid = fork();
     if (pid < 0){
         printf("Error al crear proceso hijo \n");
         exit(EXIT_FAILURE);
     }
     if(pid == 0){
-        //se deben de conectar las tuberias entre ambos procesos
-        //ejecutar el proceso de analisis de propiedades
+         execlp("./conversorGris.exe",&binformacion,&data_imagen);
     }
-    //esperar a que el hijo termine 
+    waitpid(-1,&status,0); //esperar a que el hijo termine
 }

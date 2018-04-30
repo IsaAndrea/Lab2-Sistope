@@ -71,10 +71,9 @@ int main(int argc,char **argv){
             sprintf(archivoEntrada,"imagen_%d.bmp",cantidadImagenes);
             sprintf(archivoGrisaseo,"archivo_salida_grisaseo_%d.bmp",cantidadImagenes);
             sprintf(archivoBinario,"archivo_salida_binario_%d.bmp",cantidadImagenes);
-            //conecto las tuberias entre los procesos por si necesito variables
-            //ejecuto con exect la funcion de lectura
+             execlp("./lectorImagenen.exe",&binformacion,&data_imagen);
             }
-        //esperamos a los N hijos terminen  
+        waitpid(-1,&status,0); //esperar a que el hijo termine 
         }
     
     free(binariosColor);

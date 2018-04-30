@@ -14,7 +14,6 @@
         - Un arreglo de char de una imagen leida
 */
 void leerImagenBMP(char *nombreArchivo, cabeceraInformacion *binformacion, cabeceraArchivo *bcabecera){
-    int tuberia[2]
     pid_t pid;
     FILE *archivo;
     uint16_t type;
@@ -46,17 +45,15 @@ void leerImagenBMP(char *nombreArchivo, cabeceraInformacion *binformacion, cabec
             fseek(archivo, bcabecera -> offsetBit, SEEK_SET);
             fread(data_procesada, binformacion -> tamanoImagen, 1, archivo);  
             fclose(archivo);
-            pipe(tuberia);
             pid = fork();
             if (pid < 0){
                printf("Error al crear proceso hijo \n");
                exit(EXIT_FAILURE);
             }
             if(pid == 0){
-                // compartir tuberias entre estos dos procesos
-                // ejecutar conversor de grises
+                execlp("./conversorGris.exe",&binformacion,&data_imagen);
             }
-            //esperar a que el hijo temrine
+            waitpid(-1,&status,0); //esperar a que el hijo termine
         }
     }
 }

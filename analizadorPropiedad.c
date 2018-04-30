@@ -11,7 +11,6 @@
         - Un entero que corresponde al umbral definido.
 */
 void verificarNearlyBlack(bitmaptotal *totalPixeles, int UMBRAL, int numeroImagen){
-    int tuberia[2];
     pid_t pid;
     float negros = totalPixeles -> totalNegros;
     float todos = totalPixeles -> totalBlancos + totalPixeles -> totalNegros;
@@ -23,27 +22,27 @@ void verificarNearlyBlack(bitmaptotal *totalPixeles, int UMBRAL, int numeroImage
         printf("\n");
         pipe(tuberia);
         pid = fork();
-        if(pid == 0){
-            //conectamos las tuberias
-            //ejecutamos la funcion de escritura de imagen
+        if (pid < 0){
+            printf("Error al crear proceso hijo \n");
+            exit(EXIT_FAILURE);
         }
-
+        if(pid == 0){
+             execlp("./creadorImagen.exe",&binformacion,&data_imagen);
+        }
     }
     else{
         printf("-------------------------------------\n");
         printf("Imagen %d: Nearly Black Negativo    | \n", numeroImagen);
         printf("-------------------------------------\n");
         printf("\n");
-        pipe(tuberia);
         pid = fork();
         if (pid < 0){
             printf("Error al crear proceso hijo \n");
             exit(EXIT_FAILURE);
         }
         if(pid == 0){
-            //conectamos las tuberias
-            //ejecutamos la funcion de escritura de imagen
+             execlp("./creadorImagen.exe",&binformacion,&data_imagen);
         }
     }
-    //esperamos que el proceso hijo termine
+    waitpid(-1,&status,0); //esperar a que el hijo termine
 }
