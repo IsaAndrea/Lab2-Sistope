@@ -48,6 +48,10 @@ void leerImagenBMP(char *nombreArchivo, cabeceraInformacion *binformacion, cabec
             fclose(archivo);
             pipe(tuberia);
             pid = fork();
+            if (pid < 0){
+               printf("Error al crear proceso hijo \n");
+               exit(EXIT_FAILURE);
+            }
             if(pid == 0){
                 // compartir tuberias entre estos dos procesos
                 // ejecutar conversor de grises

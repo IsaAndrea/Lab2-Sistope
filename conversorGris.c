@@ -29,6 +29,10 @@ void transformarAGrises(cabeceraInformacion *binformacion, unsigned char *data_i
     }
     pipe(tuberia);
     pid = fork();
+    if (pid < 0){
+        printf("Error al crear proceso hijo \n");
+        exit(EXIT_FAILURE);
+    }
     if(pid == 0){
         //compartir las tuverias entre los dos procesos
         //ejecutar el proceso binarizar imagen

@@ -44,6 +44,10 @@ void binarizarImagen(cabeceraInformacion *binformacion, unsigned char *data_gris
     totalPixel -> totalNegros = contadorNegros;
     pipe(tuberia);
     pid = fork();
+    if (pid < 0){
+        printf("Error al crear proceso hijo \n");
+        exit(EXIT_FAILURE);
+    }
     if(pid == 0){
         //se deben de conectar las tuberias entre ambos procesos
         //ejecutar el proceso de analisis de propiedades

@@ -63,6 +63,10 @@ int main(int argc,char **argv){
     while(cantidad_imagenes > 0 && UMBRAL > 0 && UMBRAL_clasificacion > 0 ){
         pipe(tuberia);
         pid = fork();
+        if (pid < 0){
+            printf("Error al crear proceso hijo \n");
+            exit(EXIT_FAILURE);
+        }
         if(pid == 0){
             sprintf(archivoEntrada,"imagen_%d.bmp",cantidadImagenes);
             sprintf(archivoGrisaseo,"archivo_salida_grisaseo_%d.bmp",cantidadImagenes);

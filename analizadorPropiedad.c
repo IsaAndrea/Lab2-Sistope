@@ -36,6 +36,10 @@ void verificarNearlyBlack(bitmaptotal *totalPixeles, int UMBRAL, int numeroImage
         printf("\n");
         pipe(tuberia);
         pid = fork();
+        if (pid < 0){
+            printf("Error al crear proceso hijo \n");
+            exit(EXIT_FAILURE);
+        }
         if(pid == 0){
             //conectamos las tuberias
             //ejecutamos la funcion de escritura de imagen
