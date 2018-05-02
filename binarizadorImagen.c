@@ -14,6 +14,7 @@
         - Una matriz de pixeles binarizados.
 */
 void binarizarImagen(cabeceraInformacion *binformacion, unsigned char *data_grisaseo, int UMBRAL, bitmaptotal *total_pixel){
+    unsigned char *binariosColor;
     pid_t pid;
     int columnas;
     int contadorTotal = 0;
@@ -50,4 +51,5 @@ void binarizarImagen(cabeceraInformacion *binformacion, unsigned char *data_gris
          execlp("./conversorGris.exe",&binformacion,&data_imagen);
     }
     waitpid(-1,&status,0); //esperar a que el hijo termine
+    free(binariosColor);
 }

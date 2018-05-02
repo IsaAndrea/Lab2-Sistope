@@ -14,6 +14,7 @@
         - Un arreglo de char de una imagen leida
 */
 void leerImagenBMP(char *nombreArchivo, cabeceraInformacion *binformacion, cabeceraArchivo *bcabecera){
+    unsigned char *data_imagen;
     pid_t pid;
     FILE *archivo;
     uint16_t type;
@@ -56,4 +57,5 @@ void leerImagenBMP(char *nombreArchivo, cabeceraInformacion *binformacion, cabec
             waitpid(-1,&status,0); //esperar a que el hijo termine
         }
     }
+    free(data_imagen);
 }
