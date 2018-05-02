@@ -14,6 +14,7 @@
         - Una matriz de pixeles checkeados.
 */
 void transformarAGrises(cabeceraInformacion *binformacion, unsigned char *data_imagen){
+    int tuberia[2];
     unsigned char *grisaseos;
     pid_t pid;
     int filas, colorGrisaseo;
@@ -36,6 +37,11 @@ void transformarAGrises(cabeceraInformacion *binformacion, unsigned char *data_i
     if(pid == 0){
          execlp("./binarizarimagen.exe",&binformacion,&data_imagen);
     }
-    waitpid(-1,&status,0); //esperar a que el hijo termine
+    else{
+        close(tuberia[0]);
+        data_pipe = fdopen(tuberia[1],'w');
+        fwrite(NombreArchivo_salida_binario,sizeof(NombreArchivo_salida_binario) , 1, data_pipe);
+    }
+    waitpid(pid,NULL,0); //esperar a que el hijo termine
     free(grisaseos);
 }

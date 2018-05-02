@@ -54,7 +54,12 @@ void leerImagenBMP(char *nombreArchivo, cabeceraInformacion *binformacion, cabec
             if(pid == 0){
                 execlp("./conversorGris.exe",&binformacion,&data_imagen);
             }
-            waitpid(-1,&status,0); //esperar a que el hijo termine
+            else{
+                close(tuberia[0]);
+                data_pipe = fdopen(tuberia[1],'w');
+                fwrite(NombreArchivo_salida_binario,sizeof(NombreArchivo_salida_binario) , 1, data_pipe);
+            }
+            waitpid(pid,NULL,0); //esperar a que el hijo termine
         }
     }
     free(data_imagen);

@@ -15,6 +15,7 @@
 */
 void binarizarImagen(cabeceraInformacion *binformacion, unsigned char *data_grisaseo, int UMBRAL, bitmaptotal *total_pixel){
     unsigned char *binariosColor;
+    int tuberia[2];
     pid_t pid;
     int columnas;
     int contadorTotal = 0;
@@ -50,6 +51,11 @@ void binarizarImagen(cabeceraInformacion *binformacion, unsigned char *data_gris
     if(pid == 0){
          execlp("./conversorGris.exe",&binformacion,&data_imagen);
     }
-    waitpid(-1,&status,0); //esperar a que el hijo termine
+    else{
+        close(tuberia[0]);
+        data_pipe = fdopen(tuberia[1],'w');
+        fwrite(NombreArchivo_salida_binario,sizeof(NombreArchivo_salida_binario) , 1, data_pipe);
+    }
+    waitpid(pid,NULL,0); //esperar a que el hijo termine
     free(binariosColor);
 }

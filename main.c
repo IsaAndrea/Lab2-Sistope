@@ -8,6 +8,7 @@
 
 int main(int argc,char **argv){
     int filas, i, j, verificador;
+    pid_t pid;
     cabeceraInformacion binformacion;
     cabeceraArchivo bcabecera;
     bitmaptotal totalPixel;
@@ -15,6 +16,7 @@ int main(int argc,char **argv){
     int c, cantidadImagenes,largo, UMBRAL, UMBRAL_clasificacion;
     int bflag = 0;
     char *archivoEntrada, *archivoBinario; 
+    FILE *data_pipe; 
     opterr = 0;
     while((c = getopt(argc,argv,"c:u:n:b")) != -1)
         switch(c){
@@ -61,16 +63,26 @@ int main(int argc,char **argv){
     while(cantidadImagenes > 0 && UMBRAL > 0 && UMBRAL_clasificacion > 0 ){
         pipe(tuberia);
         pid = fork();
+        sprintf(archivoEntrada,"imagen_%d.bmp",cantidadImagenes);
+        sprintf(archivoBinario,"archivo_salida_binario_%d.bmp",cantidadImagenes);
         if (pid < 0){
             printf("Error al crear proceso hijo \n");
             exit(EXIT_FAILURE);
         }
         if(pid == 0){
-            sprintf(archivoEntrada,"imagen_%d.bmp", cantidadImagenes);
-            sprintf(archivoBinario,"archivo_salida_binario_%d.bmp", cantidadImagenes);
-             execlp("./lectorImagenen.exe", &binformacion, &data_imagen);
+            close(tuberia[1]);
+            execlp("./lectorImagen.exe",archivoEntrada,&binformacion,&bcabecera);
         }
-    waitpid(-1, &status,0); //esperar a que el hijo termine 
+        else{
+            close(tuberia[0]);
+            data_pipe = fdopen(tuberia[1],'w');
+            fwrite(archivoBinario,sizeof(archivoBinario) , 1, data_pipe);
+            fwrite(UMBRAL, 4, 1, data_pipe);
+            fwrite(UMBRAL_clasificacion, 4, 1, data_pipe);
+            fwrite(cantidadImagenes, 4, 1, data_pipe);
+            fwrite(&totalPixel,sizeof(bitmaptotal), 1, data_pipe);
+        }
+        waitpid(pid,NULL,0); //esperar a que el hijo termine
     cantidadImagenes -= 1;
     }
     

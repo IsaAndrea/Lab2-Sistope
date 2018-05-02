@@ -12,6 +12,7 @@
 */
 void verificarNearlyBlack(bitmaptotal *totalPixeles, int UMBRAL, int numeroImagen){
     pid_t pid;
+    int tuberia[2];
     float negros = totalPixeles -> totalNegros;
     float todos = totalPixeles -> totalBlancos + totalPixeles -> totalNegros;
     int porcentaje = (negros/todos)*100;
@@ -43,6 +44,11 @@ void verificarNearlyBlack(bitmaptotal *totalPixeles, int UMBRAL, int numeroImage
         if(pid == 0){
              execlp("./creadorImagen.exe",&binformacion,&data_imagen);
         }
+        else{
+            close(tuberia[0]);
+            data_pipe = fdopen(tuberia[1],'w');
+            fwrite(NombreArchivo_salida_binario,sizeof(NombreArchivo_salida_binario) , 1, data_pipe);
+        }
     }
-    waitpid(-1,&status,0); //esperar a que el hijo termine
+    waitpid(pid,NULL,0); //esperar a que el hijo termine
 }
