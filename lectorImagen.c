@@ -21,6 +21,17 @@ void leerImagenBMP(char *nombreArchivo, cabeceraInformacion *binformacion, cabec
     unsigned char *data_procesada;
     archivo = fopen(nombreArchivo , "r");
 
+
+    /////////////////////////////////////////////////////////////////////////////////////////////////////
+    /////////////////////////////////////////////////////////////////////////////////////////////////////
+    // Se crea un FIFO para guardar la imagen en el archivo (arreglar path)
+    char * myfifo = "/tmp/myfifo";
+    mkfifo(myfifo, 0666);
+    int fd;
+    /////////////////////////////////////////////////////////////////////////////////////////////////////
+    /////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
     if(!archivo){
         return NULL;
     }
@@ -52,12 +63,28 @@ void leerImagenBMP(char *nombreArchivo, cabeceraInformacion *binformacion, cabec
                exit(EXIT_FAILURE);
             }
             if(pid == 0){
-                execlp("./conversorGris.exe",&binformacion,&data_imagen);
+       //         execlp("./conversorGris.exe",&binformacion,&data_imagen);
+                execlp("./conversorGris.exe",&binformacion);
             }
-            else{
+            else{/*
                 close(tuberia[0]);
                 data_pipe = fdopen(tuberia[1],'w');
-                fwrite(NombreArchivo_salida_binario,sizeof(NombreArchivo_salida_binario) , 1, data_pipe);
+                fwrite(NombreArchivo_salida_binario,sizeof(NombreArchivo_salida_binario) , 1, data_pipe);*/
+
+
+                /////////////////////////////////////////////////////////////////////////////////////////////////////
+                /////////////////////////////////////////////////////////////////////////////////////////////////////
+                // Abrir fifo sólo para escritura
+                fd = open(myfifo, O_WRONLY);
+      
+                // Escribir imagen en fifo
+                //JESUUUUUSS NO CACHO MUCHO EL WRITE PARA QUE LO REVISES JAJA TAMBIÉN SE PUEDE USAR FWRITE
+                write(fd, &data_imagen, sizeof(data_imagen));
+                close(fd);
+                /////////////////////////////////////////////////////////////////////////////////////////////////////
+                /////////////////////////////////////////////////////////////////////////////////////////////////////
+         
+
             }
             waitpid(pid,NULL,0); //esperar a que el hijo termine
         }
