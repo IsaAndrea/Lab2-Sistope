@@ -20,17 +20,37 @@ void leerImagenBMP(char *nombreArchivo, cabeceraInformacion *binformacion, cabec
     uint16_t type;
     unsigned char *data_procesada;
     archivo = fopen(nombreArchivo , "r");
+    int cantidadImagenes, UMBRAL, UMBRAL_clasificacion;
+    char *archivoBinario; 
+    bitmaptotal totalPixel;
 
 
+    /*
     /////////////////////////////////////////////////////////////////////////////////////////////////////
     /////////////////////////////////////////////////////////////////////////////////////////////////////
-    // Se crea un FIFO para guardar la imagen en el archivo (arreglar path)
-    char * myfifo = "/tmp/myfifo";
+    // Se crea un fifo con las mismas propiedades que el anterior, para realizar lectura de lo escrito
+    char * myfifo = "./myfifo";
     mkfifo(myfifo, 0666);
-    int fd;
-    /////////////////////////////////////////////////////////////////////////////////////////////////////
-    /////////////////////////////////////////////////////////////////////////////////////////////////////
+    int fd;*/
 
+    // Se crea un nuevo fifo para guardar data_imagen
+    char * myfifo = "./myfifo1";
+    mkfifo(myfifo, 0666);
+    int fd1;
+
+    /*
+    // Abrir fifo sólo para lectura
+    fd = open(myfifo, O_RDONLY);
+    // leer de fifo 
+    read(fd, archivoBinario, sizeof(archivoBinario));
+    read(fd, UMBRAL, 4);
+    read(fd, UMBRAL_clasificacion, 4);
+    read(fd, cantidadImagenes, 4);
+    read(fd, &totalPixel, sizeof(bitmaptotal));
+    close(fd);
+    /////////////////////////////////////////////////////////////////////////////////////////////////////
+    /////////////////////////////////////////////////////////////////////////////////////////////////////
+    */
 
     if(!archivo){
         return NULL;
@@ -64,9 +84,10 @@ void leerImagenBMP(char *nombreArchivo, cabeceraInformacion *binformacion, cabec
             }
             if(pid == 0){
        //         execlp("./conversorGris.exe",&binformacion,&data_imagen);
-                execlp("./conversorGris.exe",&binformacion);
+                execlp("./conversorGris.exe",&data_imagen);
             }
-            else{/*
+            else{
+            /*
                 close(tuberia[0]);
                 data_pipe = fdopen(tuberia[1],'w');
                 fwrite(NombreArchivo_salida_binario,sizeof(NombreArchivo_salida_binario) , 1, data_pipe);*/
@@ -75,12 +96,17 @@ void leerImagenBMP(char *nombreArchivo, cabeceraInformacion *binformacion, cabec
                 /////////////////////////////////////////////////////////////////////////////////////////////////////
                 /////////////////////////////////////////////////////////////////////////////////////////////////////
                 // Abrir fifo sólo para escritura
-                fd = open(myfifo, O_WRONLY);
+                fd1 = open(myfifo1, O_WRONLY);
       
-                // Escribir imagen en fifo
-                //JESUUUUUSS NO CACHO MUCHO EL WRITE PARA QUE LO REVISES JAJA TAMBIÉN SE PUEDE USAR FWRITE
-                write(fd, &data_imagen, sizeof(data_imagen));
-                close(fd);
+                // Escribir data_imagen en fifo
+                write(fd1, &data_imagen, sizeof(data_imagen));
+                /*
+                write(fd1, archivoBinario, sizeof(archivoBinario));
+                write(fd1, UMBRAL, 4);
+                write(fd1, UMBRAL_clasificacion, 4);
+                write(fd1, cantidadImagenes, 4);
+                write(fd1, &totalPixel, sizeof(bitmaptotal));
+                close(fd1);*/
                 /////////////////////////////////////////////////////////////////////////////////////////////////////
                 /////////////////////////////////////////////////////////////////////////////////////////////////////
          

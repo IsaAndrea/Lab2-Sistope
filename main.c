@@ -18,6 +18,18 @@ int main(int argc,char **argv){
     char *archivoEntrada, *archivoBinario; 
     FILE *data_pipe; 
     opterr = 0;
+
+
+    /////////////////////////////////////////////////////////////////////////////////////////////////////
+    /////////////////////////////////////////////////////////////////////////////////////////////////////
+    // Se crea un FIFO para guardar las variables
+    char * myfifo = "./myfifo";
+    mkfifo(myfifo, 0666);
+    int fd;
+    /////////////////////////////////////////////////////////////////////////////////////////////////////
+    /////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
     while((c = getopt(argc,argv,"c:u:n:b")) != -1)
         switch(c){
             case 'c':
@@ -61,7 +73,7 @@ int main(int argc,char **argv){
     }
 
     while(cantidadImagenes > 0 && UMBRAL > 0 && UMBRAL_clasificacion > 0 ){
-        pipe(tuberia);
+   //     pipe(tuberia);
         pid = fork();
         sprintf(archivoEntrada,"imagen_%d.bmp",cantidadImagenes);
         sprintf(archivoBinario,"archivo_salida_binario_%d.bmp",cantidadImagenes);
@@ -70,17 +82,36 @@ int main(int argc,char **argv){
             exit(EXIT_FAILURE);
         }
         if(pid == 0){
-            close(tuberia[1]);
-            execlp("./lectorImagen.exe",archivoEntrada,&binformacion,&bcabecera);
+         //   close(tuberia[1]);
+            execlp("./lectorImagen.exe",archivoEntrada, &binformacion, &bcabecera);
         }
         else{
+            /*
             close(tuberia[0]);
             data_pipe = fdopen(tuberia[1],'w');
             fwrite(archivoBinario,sizeof(archivoBinario) , 1, data_pipe);
             fwrite(UMBRAL, 4, 1, data_pipe);
             fwrite(UMBRAL_clasificacion, 4, 1, data_pipe);
             fwrite(cantidadImagenes, 4, 1, data_pipe);
-            fwrite(&totalPixel,sizeof(bitmaptotal), 1, data_pipe);
+            fwrite(&totalPixel,sizeof(bitmaptotal), 1, data_pipe);*/
+
+
+            /////////////////////////////////////////////////////////////////////////////////////////////////////
+            /////////////////////////////////////////////////////////////////////////////////////////////////////
+            // Abrir fifo sólo para escritura
+            fd = open(myfifo, O_WRONLY);
+            // Escribir en fifo
+            write(fd, archivoBinario, sizeof(archivoBinario));
+            write(fd, UMBRAL, 4);
+            write(fd, UMBRAL_clasificacion, 4);
+            write(fd, cantidadImagenes, 4);
+            write(fd, &totalPixel, sizeof(bitmaptotal));
+            write(fd, &binformacion, sizeof(binformacion));
+            write(fd, &bcabecera, sizeof(bcabecera));
+            close(fd);
+            /////////////////////////////////////////////////////////////////////////////////////////////////////
+            /////////////////////////////////////////////////////////////////////////////////////////////////////
+
         }
         waitpid(pid,NULL,0); //esperar a que el hijo termine
     cantidadImagenes -= 1;

@@ -13,34 +13,26 @@
    SALIDA:
         - Una matriz de pixeles checkeados.
 */
-void transformarAGrises(cabeceraInformacion *binformacion, unsigned char *data_imagen){
+void transformarAGrises(unsigned char *data_imagen){
     int tuberia[2];
-    unsigned char *grisaseos;
-    unsigned char *data_imagen;
     pid_t pid;
     int filas, colorGrisaseo;
     int cantidadBits = binformacion -> totalBit/8;
     unsigned char azul, verde, rojo, extra, *grisaseos;
+    cabeceraInformacion *binformacion;
 
     /////////////////////////////////////////////////////////////////////////////////////////////////////
     /////////////////////////////////////////////////////////////////////////////////////////////////////
-    // Se crea un fifo con las mismas propiedades que el anterior, para realizar lectura de lo escrito
-    char * myfifo = ""/tmp/myfifo"";
+    // Se crea un fifo con las mismas propiedades de main para para realizar lectura de binformacion
+    char * myfifo = "./myfifo";
     mkfifo(myfifo, 0666);
-    int fd1;
+    int fd;
 
-    // Se crea un nuevo fifo para guardar lo nuevo escrito
-    char * myfifo = ""/tmp/myfifo2"";
-    mkfifo(myfifo, 0666);
-    int fd2;
+    // Leer de FIFO binformacion
+    fd = open(myfifo, O_RDONLY);
+    read(fd, &binformacion, sizeof(binformacion));
+    close(fd);
 
-    // Leer de FIFO
-    fd1 = open(myfifo, O_RDONLY);
-    //JESUUUUUSS NO CACHO MUCHO EL READ PARA QUE LO REVISES JAJA TAMBIÉN SE PUEDE USAR FWREAD
-    read(fd1, &data_imagen, sizeof(data_imagen));
-    close(fd1);
-    /////////////////////////////////////////////////////////////////////////////////////////////////////
-    /////////////////////////////////////////////////////////////////////////////////////////////////////
 
     grisaseos = (unsigned char *)malloc(binformacion -> tamanoImagen * sizeof(unsigned char));
     for(filas = 0; filas <binformacion -> tamanoImagen; filas = filas + 4){
@@ -57,26 +49,13 @@ void transformarAGrises(cabeceraInformacion *binformacion, unsigned char *data_i
         exit(EXIT_FAILURE);
     }
     if(pid == 0){
-         execlp("./binarizarimagen.exe",&binformacion,&data_imagen);
+         execlp("./binarizadorimagen.exe", &grisaseos);
     }
     else{/*
         close(tuberia[0]);
         data_pipe = fdopen(tuberia[1],'w');
         fwrite(NombreArchivo_salida_binario,sizeof(NombreArchivo_salida_binario) , 1, data_pipe);*/
 
-
-        /////////////////////////////////////////////////////////////////////////////////////////////////////
-        /////////////////////////////////////////////////////////////////////////////////////////////////////
-        // Abrir fifo sólo para escritura
-        fd2 = open(myfifo2, O_WRONLY);
-      
-        // Escribir imagen en fifo
-        //JESUUUUUSS NO CACHO MUCHO EL WRITE PARA QUE LO REVISES JAJA TAMBIÉN SE PUEDE USAR FWRITE
-        write(fd2, &grisaseos, sizeof(grisaseos));
-        close(fd2);
-        // PODRIAMOS PASAR EL DATA_IMAGEN COMO ARGUMENTO EN EL EXEC
-        /////////////////////////////////////////////////////////////////////////////////////////////////////
-        /////////////////////////////////////////////////////////////////////////////////////////////////////
 
     }
     waitpid(pid,NULL,0); //esperar a que el hijo termine
