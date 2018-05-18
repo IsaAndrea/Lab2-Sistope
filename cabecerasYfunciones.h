@@ -30,11 +30,11 @@ typedef struct BITMAPTOTAL{
 }bitmaptotal;
 
 
-void leerImagenBMP(char *nombreArchivo, cabeceraInformacion *binformacion, cabeceraArchivo *bcabecera);
+unsigned char *leerImagenBMP(char *nombreArchivo, cabeceraInformacion *binformacion, cabeceraArchivo *bcabecera);
 void mostrarInformacionCabecera(cabeceraInformacion *info);
 void mostrarCabeceraArchivo(cabeceraArchivo *info);
-void transformarAGrises(cabeceraInformacion *binformacion, unsigned char *data_imagen);
-void binarizarImagen(cabeceraInformacion *binformacion, unsigned char *data_grisaseo, int UMBRAL, bitmaptotal *total_pixel);
+unsigned char *transformarAGrises(cabeceraInformacion *binformacion, unsigned char *data_imagen);
+unsigned char *binarizarImagen(cabeceraInformacion *binformacion, unsigned char *data_grisaseo, int UMBRAL, bitmaptotal *total_pixel);
 void verificarNearlyBlack(bitmaptotal *totalPixeles, int UMBRAL);
 void escribirNearlyBlack(int nearlyBlack, int numeroImagen,bitmaptotal *total);
 void crearImagen(cabeceraInformacion *binformacion, cabeceraArchivo *bcarchivo_guardado, char *Nombre_archivo_salida, unsigned char *data_imagen);

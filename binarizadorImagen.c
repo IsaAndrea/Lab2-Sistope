@@ -13,35 +13,18 @@
    SALIDA:
         - Una matriz de pixeles binarizados.
 */
-unsigned char *binarizarImagen(cabeceraInformacion *binformacion, unsigned char *data_grisaseo, int UMBRAL, bitmaptotal *totalPixel){
+unsigned char *binarizarImagen(int binformacionTamano,int binformacionTotalBit,int *totalBlanco, int *totalNegro, unsigned char *data_grisaseo, int UMBRAL){
     int columnas;
     int contadorTotal = 0;
     int contadorNegros = 0;
     int contadorBlancos = 0;
     int filas = 0;
     unsigned char data, *binariosColor;
-    binariosColor = (unsigned char *)malloc(binformacion -> tamanoImagen * sizeof(unsigned char));
+    binariosColor = (unsigned char *)malloc(binformacionTamano * sizeof(unsigned char));
 
-    if(binformacion -> totalBit != 32){
-        for(filas = 0; filas < binformacion -> tamanoImagen; filas = filas + 3){
-            if(data_grisaseo[filas] > UMBRAL){
-                binariosColor[filas+2] = 255; 
-                binariosColor[filas +1] = 255;
-                binariosColor[filas] = 255;
-                contadorNegros++;
-            }
 
-            else{
-                binariosColor[filas+ 2] = 0; 
-                binariosColor[filas + 1] = 0;
-                binariosColor[filas] = 0;
-                contadorBlancos++;
-            }
-        }
-    }
-
-    if(binformacion -> totalBit == 32){
-        for(filas = 0; filas < binformacion -> tamanoImagen; filas = filas + 4){
+    if(binformacionTotalBit == 32){
+        for(filas = 0; filas < binformacionTamano; filas = filas + 4){
             if(data_grisaseo[filas] > UMBRAL){
                 binariosColor[filas+3] = 255; 
                 binariosColor[filas + 2] = 255;
@@ -60,7 +43,7 @@ unsigned char *binarizarImagen(cabeceraInformacion *binformacion, unsigned char 
         }
     }
 
-    totalPixel -> totalBlancos = contadorBlancos;
-    totalPixel -> totalNegros = contadorNegros; 
+    totalBlanco = contadorBlancos;
+    totalNegro = contadorNegros; 
     return binariosColor;
 }

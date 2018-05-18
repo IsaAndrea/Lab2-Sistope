@@ -13,45 +13,42 @@
    SALIDA:
         - Una matriz de pixeles checkeados.
 */
-unsigned char *transformarAGrises(cabeceraInformacion *binformacion, unsigned char *data_imagen){
+unsigned char *transformarAGrises(int binformacionTamano, unsigned char *data_imagen){
     int filas, colorGrisaseo;
-    int cantidadBits = binformacion -> totalBit/8;
     unsigned char azul, verde, rojo, extra, *grisaseos;
-
-    /*
-    int pipeLI[2];
-    unsigned char *data_imagen;
-    data_imagen = (unsigned char*)malloc(binformacion -> tamanoImagen* sizeof(unsigned char));
-
-    // Cerrar escritura pipe
-    close(pipeLI[1]); 
-    // Leer data_imagen en pipe y cerrar
-    read(pipeLI[0], data_imagen, sizeof(data_imagen));
-    close(pipeLI[0]);
-
-    printf("se leyó el pipe\n");*/
-
-
-    grisaseos = (unsigned char *)malloc(binformacion -> tamanoImagen * sizeof(unsigned char));
-
-    if(cantidadBits == 3){
-        for(filas = 0; filas < binformacion -> tamanoImagen; filas = filas + 3){
-            colorGrisaseo = data_imagen[filas+2] * 0.3 + data_imagen[filas+1] * 0.59 + data_imagen[filas] * 0.11;
-            grisaseos[filas+2] = colorGrisaseo;
-            grisaseos[filas+1] = colorGrisaseo;
-            grisaseos[filas] = colorGrisaseo;
-        }
-    }
-
-    if(cantidadBits == 4){
-            for(filas = 0; filas <binformacion -> tamanoImagen; filas = filas + 4){
-            colorGrisaseo = data_imagen[filas+2] * 0.3 + data_imagen[filas+1] * 0.59 + data_imagen[filas] * 0.11;
-            grisaseos[filas+3] = 255;
-            grisaseos[filas+2] = colorGrisaseo;
-            grisaseos[filas+1] = colorGrisaseo;
-            grisaseos[filas] = colorGrisaseo;
-        }
+    grisaseos = (unsigned char *)malloc(binformacionTamano * sizeof(unsigned char));
+    for(filas = 0; filas <binformacionTamano; filas = filas + 4){
+        colorGrisaseo = data_imagen[filas+2] * 0.3 + data_imagen[filas+1] * 0.59 + data_imagen[filas] * 0.11;
+        grisaseos[filas+3] = 255;
+        grisaseos[filas+2] = colorGrisaseo;
+        grisaseos[filas+1] = colorGrisaseo;
+        grisaseos[filas] = colorGrisaseo;
     }
 
     return grisaseos;
+}
+
+int main(int argc,char *argv[]) {
+  pid_t pid;
+  int status;
+  unsigned char *data_grisaseos;
+  int tamano = atoi(argv[7]);
+  //Los parametros que son recibidos como char, se transforma en enteros para su posterior utilizacion
+  data_grisaseos = transformarAGrises(argv[7],argv[15]);
+  printf("pude leer la imagen \n");
+  pid = fork();
+            if (pid < 0){
+                printf("Error al crear proceso hijo \n");
+                return 0;
+            }
+            if(pid == 0){
+                char *arreglos[] = {
+                    tamano,
+                    NULL};
+                // execv("./conversorGris.exe",arreglos);
+                // printf("regrese a el hijo \n");
+            }
+            waitpid(pid, &status, 0);
+            printf("pase por aqui \n");
+  return 0;
 }

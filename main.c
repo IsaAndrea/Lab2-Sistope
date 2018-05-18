@@ -9,13 +9,16 @@
 int main(int argc,char **argv){
     int c, cantidadImagenes,largo, UMBRAL, UMBRAL_clasificacion;
     int bflag = 0;
-    int tuberia[2];
+    //int tuberia[2];
     int status;
     unsigned char *data_imagen, *grisaseos, *binariosColor;
     cabeceraInformacion binformacion;
     cabeceraArchivo bcabecera;
     pid_t pid;
     char *archivoEntrada, *archivoGrisaseo, *archivoBinario; 
+    char *data1 = (char*)malloc(16 * sizeof(char));
+    char *data2 = (char*)malloc(16 * sizeof(char));
+    char *data3 = (char*)malloc(16 * sizeof(char));
     opterr = 0;
     while((c = getopt(argc,argv,"c:u:n:b")) != -1)
         switch(c){
@@ -60,7 +63,7 @@ int main(int argc,char **argv){
         return -1;
     }
     while(cantidadImagenes > 0 && UMBRAL > 0 && UMBRAL_clasificacion > 0 ){
-        pipe(tuberia);
+        //pipe(tuberia);
         pid = fork();
         sprintf(archivoEntrada,"imagen_%d.bmp",cantidadImagenes);
         sprintf(archivoGrisaseo,"archivo_salida_grisaseo_%d.bmp",cantidadImagenes);
@@ -70,8 +73,12 @@ int main(int argc,char **argv){
             return 0;
         }
         if(pid == 0){
-            execlp("./lectorImagen.exe",archivoEntrada, &binformacion, &bcabecera);
-        }
+            sprintf(data1, "%d", UMBRAL);
+            sprintf(data2, "%d", UMBRAL_clasificacion);
+            sprintf(data3, "%d", bflag);
+            char *arreglos[] = {archivoEntrada,data1,data2,data3,NULL};
+            execv("./leerImagen",arreglos);
+            }
         else{
             waitpid(pid, &status, 0);
         }
