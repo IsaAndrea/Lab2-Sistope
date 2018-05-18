@@ -9,7 +9,13 @@
 int main(int argc,char **argv){
     int c, cantidadImagenes,largo, UMBRAL, UMBRAL_clasificacion;
     int bflag = 0;
-    char *archivoEntrada, *archivoSalidaGrisaseo, *archivoSalidaBinario; 
+    int tuberia[2];
+    int status;
+    unsigned char *data_imagen, *grisaseos, *binariosColor;
+    cabeceraInformacion binformacion;
+    cabeceraArchivo bcabecera;
+    pid_t pid;
+    char *archivoEntrada, *archivoGrisaseo, *archivoBinario; 
     opterr = 0;
     while((c = getopt(argc,argv,"c:u:n:b")) != -1)
         switch(c){
@@ -17,8 +23,8 @@ int main(int argc,char **argv){
                 sscanf(optarg,"%d",&cantidadImagenes);
                 largo = strlen(optarg);
                 archivoEntrada = malloc(largo + 11);
-                archivoSalidaGrisaseo = malloc(largo + 28);
-                archivoSalidaBinario = malloc(largo + 27);
+                archivoGrisaseo = malloc(largo + 28);
+                archivoBinario = malloc(largo + 27);
                 break;
             case 'u':
                 
@@ -54,7 +60,22 @@ int main(int argc,char **argv){
         return -1;
     }
     while(cantidadImagenes > 0 && UMBRAL > 0 && UMBRAL_clasificacion > 0 ){
-        procesarImagenes(cantidadImagenes, UMBRAL, UMBRAL_clasificacion, bflag, archivoEntrada, archivoSalidaBinario, archivoSalidaGrisaseo);
+        pipe(tuberia);
+        pid = fork();
+        sprintf(archivoEntrada,"imagen_%d.bmp",cantidadImagenes);
+        sprintf(archivoGrisaseo,"archivo_salida_grisaseo_%d.bmp",cantidadImagenes);
+        sprintf(archivoBinario,"archivo_salida_binario_%d.bmp",cantidadImagenes);
+        if (pid < 0){
+            printf("Error al crear proceso hijo \n");
+            return 0;
+        }
+        if(pid == 0){
+            execlp("./lectorImagen.exe",archivoEntrada, &binformacion, &bcabecera);
+        }
+        else{
+            waitpid(pid, &status, 0);
+        }
+        //procesarImagenes(cantidadImagenes, UMBRAL, UMBRAL_clasificacion, bflag, archivoEntrada, archivoSalidaBinario, archivoSalidaGrisaseo);
         cantidadImagenes--;
     }
     
