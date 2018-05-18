@@ -55,6 +55,9 @@ unsigned char *leerImagenBMP(char *nombreArchivo, cabeceraInformacion *binformac
     uint16_t type;
     unsigned char *data_imagen;
    // int pipeLI[2];
+    int pipeEI[2];
+    int pipeEC[2];
+    pipe(pipeEI);
  
     archivo = fopen(nombreArchivo , "r");
     if(!archivo){
@@ -90,7 +93,17 @@ unsigned char *leerImagenBMP(char *nombreArchivo, cabeceraInformacion *binformac
             write(pipeLI[1], data_imagen, sizeof(data_imagen));
             close(pipeLI[1]);
             */
-     
+
+//            close(pipeEI[0]);  // Cerrar lectura pipe
+            write(pipeEI[1], &binformacion, sizeof(cabeceraInformacion));
+            dup2(pipeEI[0], 100);
+ //           close(pipeEI[1]);
+
+            close(pipeEC[0]);  // Cerrar lectura pipe
+            write(pipeEC[1], &bcabecera, sizeof(cabeceraArchivo));
+            close(pipeEC[1]);
+            printf("%d \n", binformacion -> ancho);
+            printf("%d \n", binformacion -> tamanoImagen);
 
             return data_imagen;
         }
@@ -107,26 +120,31 @@ unsigned char *leerImagenBMP(char *nombreArchivo, cabeceraInformacion *binformac
    SALIDA:
         - Una matriz de pixeles checkeados.
 */
-unsigned char *transformarAGrises(cabeceraInformacion *binformacion, unsigned char *data_imagen){
+unsigned char *transformarAGrises(unsigned char *data_imagen){
     int filas, colorGrisaseo;
-    int cantidadBits = binformacion -> totalBit/8;
+    
     unsigned char azul, verde, rojo, extra, *grisaseos;
+    cabeceraInformacion *binformacion;
 
     /*
-    int pipeLI[2];
-    unsigned char *data_imagen;
-    data_imagen = (unsigned char*)malloc(binformacion -> tamanoImagen* sizeof(unsigned char));
-
-    // Cerrar escritura pipe
-    close(pipeLI[1]); 
-    // Leer data_imagen en pipe y cerrar
-    read(pipeLI[0], data_imagen, sizeof(data_imagen));
-    close(pipeLI[0]);
-
-    printf("se leyó el pipe\n");*/
+    int pipeEI[2];
 
 
+    close(pipeEI[1]);
+    read(pipeEI[0], &binformacion, sizeof(cabeceraInformacion));
+    close(pipeEI[0]);*/
+
+    read(100, &binformacion, sizeof(cabeceraInformacion));
+
+    printf("%d \n", binformacion -> ancho);
+    printf("%d \n", binformacion -> tamanoImagen);
+    printf("pipe leido\n");
+
+    int cantidadBits = binformacion -> totalBit/8;
+ 
+    printf("pasaa 1\n");
     grisaseos = (unsigned char *)malloc(binformacion -> tamanoImagen * sizeof(unsigned char));
+     printf("pasaa 2\n");
 
     if(cantidadBits == 3){
         for(filas = 0; filas < binformacion -> tamanoImagen; filas = filas + 3){
@@ -136,6 +154,7 @@ unsigned char *transformarAGrises(cabeceraInformacion *binformacion, unsigned ch
             grisaseos[filas] = colorGrisaseo;
         }
     }
+     printf("pasaa 3\n");
 
     if(cantidadBits == 4){
             for(filas = 0; filas <binformacion -> tamanoImagen; filas = filas + 4){
@@ -146,8 +165,10 @@ unsigned char *transformarAGrises(cabeceraInformacion *binformacion, unsigned ch
             grisaseos[filas] = colorGrisaseo;
         }
     }
+     printf("pasaa 4\n");
 
     return grisaseos;
+    printf("pasaa 5\n");
 }
 
 
@@ -294,39 +315,41 @@ void crearImagen(cabeceraInformacion *binformacion, cabeceraArchivo *bcarchivo_g
         - Nombre del archivo grisaseo.
         - Nombre del archivo binario.
 */
-
-
-// void procesarImagenes(int cantidadImagenes, int UMBRAL, int UMBRAL_clasificacion, int bflag, char *archivoEntrada, char *archivoBinario, char *archivoGrisaseo){
-//     int filas, i, j, verificador;
-    
-    
-    
-//     data_imagen = leerImagenBMP(archivoEntrada, &binformacion, &bcabecera);
-//     if(data_imagen != NULL){
-//         if(binformacion.totalBit == 32){
-//             grisaseos = transformarAGrises(&binformacion, data_imagen);
-//             binariosColor = binarizarImagen(&binformacion, grisaseos, UMBRAL, &totalPixel);
-//             crearImagen(&binformacion, &bcabecera, archivoGrisaseo, grisaseos);
-//             crearImagen(&binformacion, &bcabecera, archivoBinario, binariosColor);
-//             if(bflag == 1){
-//                 verificarNearlyBlack(&totalPixel, UMBRAL_clasificacion, cantidadImagenes);
-//             }
-//         }
-//         else{
-//             grisaseos = transformarAGrises(&binformacion, data_imagen);
-//             binariosColor = binarizarImagen(&binformacion, data_imagen, UMBRAL, &totalPixel);
-//             crearImagen(&binformacion, &bcabecera, archivoGrisaseo, grisaseos);
-//             crearImagen(&binformacion, &bcabecera, archivoBinario, binariosColor);
-//             if(bflag == 1){
-//                 verificarNearlyBlack(&totalPixel, UMBRAL_clasificacion, cantidadImagenes);
-//             }
-//         }
-//         free(binariosColor);
-//         free(data_imagen);
-//         free(grisaseos);
-//         cantidadImagenes -= 1;
-//     }    
-// }
+void procesarImagenes(int cantidadImagenes, int UMBRAL, int UMBRAL_clasificacion, int bflag, char *archivoEntrada, char *archivoBinario, char *archivoGrisaseo){
+    int filas, i, j, verificador;
+    unsigned char *data_imagen, *grisaseos, *binariosColor;
+    cabeceraInformacion binformacion;
+    cabeceraArchivo bcabecera;
+    bitmaptotal totalPixel;
+    sprintf(archivoEntrada,"imagen_%d.bmp",cantidadImagenes);
+    sprintf(archivoGrisaseo,"archivo_salida_grisaseo_%d.bmp",cantidadImagenes);
+    sprintf(archivoBinario,"archivo_salida_binario_%d.bmp",cantidadImagenes);
+    data_imagen = leerImagenBMP(archivoEntrada, &binformacion, &bcabecera);
+    if(data_imagen != NULL){
+        if(binformacion.totalBit == 32){
+            grisaseos = transformarAGrises(data_imagen);
+            binariosColor = binarizarImagen(&binformacion, grisaseos, UMBRAL, &totalPixel);
+            crearImagen(&binformacion, &bcabecera, archivoGrisaseo, grisaseos);
+            crearImagen(&binformacion, &bcabecera, archivoBinario, binariosColor);
+            if(bflag == 1){
+                verificarNearlyBlack(&totalPixel, UMBRAL_clasificacion, cantidadImagenes);
+            }
+        }
+        else{
+            grisaseos = transformarAGrises(data_imagen);
+            binariosColor = binarizarImagen(&binformacion, data_imagen, UMBRAL, &totalPixel);
+            crearImagen(&binformacion, &bcabecera, archivoGrisaseo, grisaseos);
+            crearImagen(&binformacion, &bcabecera, archivoBinario, binariosColor);
+            if(bflag == 1){
+                verificarNearlyBlack(&totalPixel, UMBRAL_clasificacion, cantidadImagenes);
+            }
+        }
+        free(binariosColor);
+        free(data_imagen);
+        free(grisaseos);
+        cantidadImagenes -= 1;
+    }    
+}
 
 
 
@@ -335,13 +358,7 @@ void crearImagen(cabeceraInformacion *binformacion, cabeceraArchivo *bcarchivo_g
 int main(int argc,char **argv){
     int c, cantidadImagenes,largo, UMBRAL, UMBRAL_clasificacion;
     int bflag = 0;
-    int tuberia[2];
-    int status;
-    unsigned char *data_imagen, *grisaseos, *binariosColor;
-    cabeceraInformacion binformacion;
-    cabeceraArchivo bcabecera;
-    pid_t pid;
-    char *archivoEntrada, *archivoGrisaseo, *archivoBinario; 
+    char *archivoEntrada, *archivoSalidaGrisaseo, *archivoSalidaBinario; 
     opterr = 0;
     while((c = getopt(argc,argv,"c:u:n:b")) != -1)
         switch(c){
@@ -349,8 +366,8 @@ int main(int argc,char **argv){
                 sscanf(optarg,"%d",&cantidadImagenes);
                 largo = strlen(optarg);
                 archivoEntrada = malloc(largo + 11);
-                archivoGrisaseo = malloc(largo + 28);
-                archivoBinario = malloc(largo + 27);
+                archivoSalidaGrisaseo = malloc(largo + 28);
+                archivoSalidaBinario = malloc(largo + 27);
                 break;
             case 'u':
                 
@@ -386,22 +403,7 @@ int main(int argc,char **argv){
         return -1;
     }
     while(cantidadImagenes > 0 && UMBRAL > 0 && UMBRAL_clasificacion > 0 ){
-        pipe(tuberia);
-        pid = fork();
-        sprintf(archivoEntrada,"imagen_%d.bmp",cantidadImagenes);
-        sprintf(archivoGrisaseo,"archivo_salida_grisaseo_%d.bmp",cantidadImagenes);
-        sprintf(archivoBinario,"archivo_salida_binario_%d.bmp",cantidadImagenes);
-        if (pid < 0){
-            printf("Error al crear proceso hijo \n");
-            return 0;
-        }
-        if(pid == 0){
-            execlp("./lectorImagen.exe",archivoEntrada, &binformacion, &bcabecera);
-        }
-        else{
-            waitpid(pid, &status, 0);
-        }
-        //procesarImagenes(cantidadImagenes, UMBRAL, UMBRAL_clasificacion, bflag, archivoEntrada, archivoSalidaBinario, archivoSalidaGrisaseo);
+        procesarImagenes(cantidadImagenes, UMBRAL, UMBRAL_clasificacion, bflag, archivoEntrada, archivoSalidaBinario, archivoSalidaGrisaseo);
         cantidadImagenes--;
     }
     
