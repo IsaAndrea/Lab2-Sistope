@@ -12,52 +12,16 @@
         - Un nombre que corresponde al archivo de salida.
         - Un arreglo de pixeles.
 */
-
-// ELIMINAR TODOS LOS ARGUMENTOS???
-void crearImagen(cabeceraInformacion *binformacion, cabeceraArchivo *bcarchivo_guardado, char *Nombre_archivo_salida, unsigned char *data_imagen){
+void crearImagen(cabeceraInformacion *binformacion, cabeceraArchivo *bcarchivo_guardado, char *archivoSalida, unsigned char *data_imagen){
     FILE *archivo;  
     uint16_t type;
-    char *archivoBinario; 
-    bitmaptotal totalPixel;
 
-    /////////////////////////////////////////////////////////////////////////////////////////////////////
-    /////////////////////////////////////////////////////////////////////////////////////////////////////
-    // Se crea un fifo con las mismas propiedades de main para para realizar lectura de binformacion, bcabecera, archivoSalida y dataImagen
-    char * myfifo = "./myfifo";
-    mkfifo(myfifo, 0666);
-    int fd;
-
-     // Se crea un fifo con las mismas propiedades de leerImagen para para realizar lectura de data_imagen
-    char * myfifo = "./myfifo1";
-    mkfifo(myfifo1, 0666);
-    int fd1;
-
-    // Leer de FIFO 
-    fd = open(myfifo, O_RDONLY);
-    write(fd, archivoBinario, sizeof(archivoBinario));
-    write(fd, &binformacion, sizeof(binformacion));
-    write(fd, &bcabecera, sizeof(bcabecera));
-    close(fd);
-
-        // Leer de FIFO1 data_imagen
-    fd1 = open(myfifo1, O_RDONLY);
-    read(fd1, &data_imagen, sizeof(data_imagen));
-    close(fd1);
-    /////////////////////////////////////////////////////////////////////////////////////////////////////
-    /////////////////////////////////////////////////////////////////////////////////////////////////////
-    /////////////////////////////////////////////////////////////////////////////////////////////////////
-    /////////////////////////////////////////////////////////////////////////////////////////////////////
-
-    archivo = fopen(Nombre_archivo_salida, "wb" );
+    archivo = fopen(archivoSalida, "wb" );
     if(!archivo){ 
         printf( "La imagen no se pudo crear\n");
         exit(1);
     }
-
-    if(binformacion -> compresion != 0){
-        binformacion -> compresion = 0;
-    }
-
+    binformacion -> compresion = 0;
     type=0x4D42;
     fwrite(&type,sizeof(uint16_t),1,archivo);
     fwrite(&bcarchivo_guardado -> tamano, 4, 1, archivo);
