@@ -21,13 +21,13 @@ unsigned char *leerImagenBMP(char *nombreArchivo, cabeceraInformacion *binformac
     unsigned char *data_imagen;
     archivo = fopen(nombreArchivo , "r");
     if(!archivo){
-        printf("No se pudo leer la imagen");
+        printf("No se pudo leer la imagen \n");
         return NULL;
     }
     else{
         fread(&type, sizeof(uint16_t), 1, archivo);
         if(type != 0x4D42){
-            printf("La imagen no es de tipo bmp");
+            printf("La imagen no es de tipo bmp \n");
             fclose(archivo);
             return NULL;
         }
@@ -53,44 +53,53 @@ unsigned char *leerImagenBMP(char *nombreArchivo, cabeceraInformacion *binformac
 
 
 int main(int argc,char *argv[]) {
-    printf("argumentos salida en leer imagen: %s ,%s,%s,%s \n",argv[0],argv[1],argv[2],argv[3]);
     pid_t pid;
     int status;
+    int tuberia[2];
     cabeceraInformacion binformacion;
     cabeceraArchivo bcabecera;
     unsigned char *data_imagen;
-    char data1[50],data2[50],data3[50],data4[50],data5[50],data6[50],data7[50],data8[50],data9[50],data10[50],data11[50],data12[50],data13[50],data14[50],data15[50];
+    char *cambio = (char *)malloc(2 * sizeof(char));
     //Los parametros que son recibidos como char, se transforma en enteros para su posterior utilizacion
     data_imagen = leerImagenBMP(argv[0],&binformacion,&bcabecera);
+    printf("Tamano lector imagen ->>>>> %d \n", binformacion.tamano);
     printf("pude leer la imagen \n");
+    pipe(tuberia);
     pid = fork();
         if (pid < 0){
             printf("Error al crear proceso hijo \n");
             return 0;
         }
     if(pid == 0){
-        sprintf(data1, "%d", binformacion.alto);
-        sprintf(data2, "%d", binformacion.ancho);
-        sprintf(data3, "%d", binformacion.coloresImportantes);
-        sprintf(data4, "%d", binformacion.colorPixel);
-        sprintf(data5, "%d", binformacion.compresion);
-        sprintf(data6, "%d", binformacion.direcciones);
-        sprintf(data7, "%d", binformacion.tamano);
-        sprintf(data8, "%d", binformacion.tamanoImagen);
-        sprintf(data9, "%d", binformacion.totalBit);
-        sprintf(data10, "%d", binformacion.XResolporMetros);
-        sprintf(data11, "%d", binformacion.YResolporMetros);
-        sprintf(data12, "%d", bcabecera.tamano);
-        sprintf(data13, "%d", bcabecera.offsetBit);
-        sprintf(data14, "%d", bcabecera.reservado1);
-        sprintf(data15, "%d", bcabecera.reservado2);
-        printf("el valor dentro de la estructura es: %d \n",binformacion.alto);
-        printf("el valor guardado en string es: %s \n",data1);
-        char *arreglos[] = {
-            data1,data2,data3,data4,data5,data6,data7,data8,data9,data10,data11,data12,data13,data14,data15,NULL};
-        // execv("./conversorGris.exe",arreglos);
+        printf("el de alto en lector es: %d \n",binformacion.alto);
+        sprintf(cambio,"%d",tuberia[0]);
+        char *arreglos[] = {argv[1],argv[2],argv[3],cambio,NULL};
+        execv("./conversorGris",arreglos);
     }
-    waitpid(pid, &status, 0);
-    printf("pase por aqui en padre de leer imagen \n");
+    else{
+        //close(tuberia[0]);
+        write(tuberia[1],&bcabecera.tamano,sizeof(uint32_t));
+        write(tuberia[1],&bcabecera.reservado1,sizeof(uint16_t));
+        write(tuberia[1],&bcabecera.reservado2,sizeof(uint16_t));
+        write(tuberia[1],&bcabecera.offsetBit,sizeof(uint32_t));
+
+        write(tuberia[1],&binformacion.alto,sizeof(uint32_t));
+        write(tuberia[1],&binformacion.ancho,sizeof(uint32_t));
+        write(tuberia[1],&binformacion.coloresImportantes,sizeof(uint32_t));
+        write(tuberia[1],&binformacion.colorPixel,sizeof(uint16_t));
+        write(tuberia[1],&binformacion.compresion,sizeof(uint16_t));
+        write(tuberia[1],&binformacion.direcciones,sizeof(uint32_t));
+        write(tuberia[1],&binformacion.tamano,sizeof(uint32_t));
+        write(tuberia[1],&binformacion.tamanoImagen,sizeof(uint32_t));
+        write(tuberia[1],&binformacion.totalBit,sizeof(uint32_t));
+        write(tuberia[1],&binformacion.XResolporMetros,sizeof(uint32_t));
+        write(tuberia[1],&binformacion.YResolporMetros,sizeof(uint32_t));
+
+
+        write(tuberia[1],data_imagen,sizeof(data_imagen));
+        dup2(tuberia[0],110);
+        waitpid(pid, &status, 0);
+        printf("pase por aqui en padre de leer imagen \n");
+    }
   return 0;
 }

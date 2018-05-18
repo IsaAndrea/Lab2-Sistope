@@ -77,10 +77,12 @@ int main(int argc,char **argv){
             sprintf(data2, "%d", UMBRAL_clasificacion);
             sprintf(data3, "%d", bflag);
             char *arreglos[] = {archivoEntrada,data1,data2,data3,NULL};
-            execv("./leerImagen",arreglos);
+            printf("ingrese aqui \n");
+            execv("./lectorImagen",arreglos);
             }
         else{
             waitpid(pid, &status, 0);
+            printf("aqui termine el hijo padre \n");
         }
         //procesarImagenes(cantidadImagenes, UMBRAL, UMBRAL_clasificacion, bflag, archivoEntrada, archivoSalidaBinario, archivoSalidaGrisaseo);
         cantidadImagenes--;
