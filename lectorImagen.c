@@ -43,13 +43,14 @@ unsigned char *leerImagenBMP(char *nombreArchivo, cabeceraInformacion *binformac
 
         else{
             fseek(archivo, bcabecera -> offsetBit, SEEK_SET);
-            fread(data_imagen, binformacion -> tamanoImagen, 1, archivo);  
+            fread(data_imagen, binformacion -> tamanoImagen, 1, archivo); 
             fclose(archivo);
-            int tamano = binformacion->tamanoImagen;
             return data_imagen;
         }
     }
 }
+
+
 
 
 int main(int argc,char *argv[]) {
@@ -62,8 +63,6 @@ int main(int argc,char *argv[]) {
     char *cambio = (char *)malloc(2 * sizeof(char));
     //Los parametros que son recibidos como char, se transforma en enteros para su posterior utilizacion
     data_imagen = leerImagenBMP(argv[0],&binformacion,&bcabecera);
-    printf("Tamano lector imagen ->>>>> %d \n", binformacion.tamano);
-    printf("pude leer la imagen \n");
     pipe(tuberia);
     pid = fork();
         if (pid < 0){
@@ -71,13 +70,12 @@ int main(int argc,char *argv[]) {
             return 0;
         }
     if(pid == 0){
-        printf("el de alto en lector es: %d \n",binformacion.alto);
         sprintf(cambio,"%d",tuberia[0]);
-        char *arreglos[] = {argv[1],argv[2],argv[3],cambio,NULL};
+        char *arreglos[] = {argv[1],argv[2],argv[3],cambio,argv[4],argv[5],NULL};
         execv("./conversorGris",arreglos);
     }
     else{
-        //close(tuberia[0]);
+        close(tuberia[0]);
         write(tuberia[1],&bcabecera.tamano,sizeof(uint32_t));
         write(tuberia[1],&bcabecera.reservado1,sizeof(uint16_t));
         write(tuberia[1],&bcabecera.reservado2,sizeof(uint16_t));
@@ -95,11 +93,10 @@ int main(int argc,char *argv[]) {
         write(tuberia[1],&binformacion.XResolporMetros,sizeof(uint32_t));
         write(tuberia[1],&binformacion.YResolporMetros,sizeof(uint32_t));
 
-
-        write(tuberia[1],data_imagen,sizeof(data_imagen));
-        dup2(tuberia[0],110);
+        for(int i = 0;i < binformacion.tamanoImagen;i++){
+            write(tuberia[1],&data_imagen[i],sizeof(unsigned char));
+        }
         waitpid(pid, &status, 0);
-        printf("pase por aqui en padre de leer imagen \n");
     }
   return 0;
 }

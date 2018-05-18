@@ -4,6 +4,7 @@
 #include <ctype.h>
 #include <stdint.h>
 #include <unistd.h>
+#include "cabecerasYfunciones.h"
 
 /* Procedimiento que crea una imagen de tipo bmp.
    ENTRADA:
@@ -42,4 +43,35 @@ void crearImagen(cabeceraInformacion *binformacion, cabeceraArchivo *bcarchivo_g
     fseek(archivo,bcarchivo_guardado -> offsetBit, SEEK_SET);
     fwrite(data_imagen, binformacion -> tamanoImagen, 1, archivo);
     fclose(archivo);
+}
+
+
+int main(int argc,char *argv[]) {
+    cabeceraInformacion binformacion;
+    cabeceraArchivo bcabecera;
+    int tuberia = atoi(argv[0]);
+    read(tuberia,&bcabecera.tamano,sizeof(uint32_t));
+    read(tuberia,&bcabecera.reservado1,sizeof(uint16_t));
+    read(tuberia,&bcabecera.reservado2,sizeof(uint16_t));
+    read(tuberia,&bcabecera.offsetBit,sizeof(uint32_t));
+
+    read(tuberia,&binformacion.alto,sizeof(uint32_t));
+    read(tuberia,&binformacion.ancho,sizeof(uint32_t));
+    read(tuberia,&binformacion.coloresImportantes,sizeof(uint32_t));
+    read(tuberia,&binformacion.colorPixel,sizeof(uint16_t));
+    read(tuberia,&binformacion.compresion,sizeof(uint16_t));
+    read(tuberia,&binformacion.direcciones,sizeof(uint32_t));
+    read(tuberia,&binformacion.tamano,sizeof(uint32_t));
+    read(tuberia,&binformacion.tamanoImagen,sizeof(uint32_t));
+    read(tuberia,&binformacion.totalBit,sizeof(uint32_t));
+    read(tuberia,&binformacion.XResolporMetros,sizeof(uint32_t));
+    read(tuberia,&binformacion.YResolporMetros,sizeof(uint32_t));
+
+    unsigned char *data_grisasea = (unsigned char*)malloc(binformacion.tamanoImagen * sizeof(unsigned char));
+    for(int i = 0;i < binformacion.tamanoImagen;i++){
+        read(tuberia,&data_grisasea[i],sizeof(unsigned char));
+    }
+    //Los parametros que son recibidos como char, se transforma en enteros para su posterior utilizacion
+    crearImagen(&binformacion,&bcabecera,argv[1],data_grisasea); 
+    return 0;
 }

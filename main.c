@@ -11,14 +11,12 @@ int main(int argc,char **argv){
     int bflag = 0;
     //int tuberia[2];
     int status;
-    unsigned char *data_imagen, *grisaseos, *binariosColor;
-    cabeceraInformacion binformacion;
-    cabeceraArchivo bcabecera;
     pid_t pid;
     char *archivoEntrada, *archivoGrisaseo, *archivoBinario; 
     char *data1 = (char*)malloc(16 * sizeof(char));
     char *data2 = (char*)malloc(16 * sizeof(char));
     char *data3 = (char*)malloc(16 * sizeof(char));
+    char *data4 = (char*)malloc(16 * sizeof(char));
     opterr = 0;
     while((c = getopt(argc,argv,"c:u:n:b")) != -1)
         switch(c){
@@ -76,15 +74,13 @@ int main(int argc,char **argv){
             sprintf(data1, "%d", UMBRAL);
             sprintf(data2, "%d", UMBRAL_clasificacion);
             sprintf(data3, "%d", bflag);
-            char *arreglos[] = {archivoEntrada,data1,data2,data3,NULL};
-            printf("ingrese aqui \n");
+            sprintf(data4, "%d", cantidadImagenes);
+            char *arreglos[] = {archivoEntrada,data1,data2,data3,data4,archivoGrisaseo,NULL};
             execv("./lectorImagen",arreglos);
             }
         else{
             waitpid(pid, &status, 0);
-            printf("aqui termine el hijo padre \n");
         }
-        //procesarImagenes(cantidadImagenes, UMBRAL, UMBRAL_clasificacion, bflag, archivoEntrada, archivoSalidaBinario, archivoSalidaGrisaseo);
         cantidadImagenes--;
     }
     
